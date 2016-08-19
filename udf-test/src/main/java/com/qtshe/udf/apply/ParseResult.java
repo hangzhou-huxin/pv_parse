@@ -2,17 +2,17 @@ package com.qtshe.udf.apply;
 
 public class ParseResult {
 	
-	public ParseResult(String logId, String event, String deviceId) {
+	public ParseResult(String logId , String deviceId , String eventType) {
 		super();
 		this.logId = logId;
-		this.event = event;
+		this.eventType = eventType;
 		this.deviceId = deviceId;
 	}
 
 	private String logId ;
 	
 	
-	private String  event ;
+	private String  eventType ;
 	
 	
 	private String deviceId ;
@@ -30,12 +30,14 @@ public class ParseResult {
 		this.logId = logId;
 	}
 
-	public String getEvent() {
-		return event;
+	
+
+	public String getEventType() {
+		return eventType;
 	}
 
-	public void setEvent(String event) {
-		this.event = event;
+	public void setEventType(String eventType) {
+		this.eventType = eventType;
 	}
 
 	public String getDeviceId() {
@@ -44,6 +46,11 @@ public class ParseResult {
 
 	public void setDeviceId(String deviceId) {
 		this.deviceId = deviceId;
+	}
+
+	@Override
+	public String toString() {
+		return "ParseResult [logId=" + logId + ", eventType=" + eventType + ", deviceId=" + deviceId + "]";
 	}
 
 	

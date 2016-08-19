@@ -6,6 +6,9 @@ public class NodeInfo {
 	
 	
 	private String  events ;
+	
+	
+	private String  logId ;
 
 
 	public Integer getInterfaceId() {
@@ -26,6 +29,19 @@ public class NodeInfo {
 	public void setEvents(String events) {
 		this.events = events;
 	}
+
+
+	public String getLogId() {
+		return logId;
+	}
+
+
+	public void setLogId(String logId) {
+		this.logId = logId;
+	}
+
+
+	
 	
 	
 	

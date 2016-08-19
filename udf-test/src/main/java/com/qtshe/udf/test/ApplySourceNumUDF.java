@@ -12,12 +12,13 @@ import com.qtshe.udf.apply.ApplyParseUtil;
 import com.qtshe.udf.apply.ParseResult;
 
 /**
- * 输入格式：device_id、path 返回格式：device_id、搜索类型、数量
+ * 输入格式：device_id、path 
+ * 返回格式：device_id、搜索类型、数量
  * 
  * @author Administrator
  *
  */
-@Resolve({ "string,string->string,string,string,bigint" })
+@Resolve({ "string,string->string,string,string" })
 public class ApplySourceNumUDF extends UDTF {
 
 	//private Map<String,Long> map = null ;
@@ -43,10 +44,11 @@ public class ApplySourceNumUDF extends UDTF {
 		// String logId = (String)args[0]	 ;
 		 String deviceId = (String)args[0] ; 
 		 String path = (String)args[1] ;
-		 List<ParseResult>	list = ApplyParseUtil.parsePathToList(logId, deviceId, path) ;
+		 List<ParseResult>	list = ApplyParseUtil.parsePathToList( deviceId, path) ;
 		 
 		 for(ParseResult result : list){
-				this.forward(logId,deviceId,result.getEvent(),1);
+			 //返回每条记录格式为：logId   deviceId  eventType   ,即每一个报名事件的相关信息
+				this.forward(result.getLogId(),deviceId,result.getEventType());
 		 }
 
 	}

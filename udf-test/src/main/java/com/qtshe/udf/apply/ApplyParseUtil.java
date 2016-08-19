@@ -38,7 +38,7 @@ public class ApplyParseUtil {
 	
 
 	/**
-	 * 从"接口id.事件1.事件2"这样的串中提分别提取出接口id和事件串，以方便后续业务处理
+	 * 从"接口id.事件1.事件2_日志编号"这样的串中提分别提取出接口id和事件串，以方便后续业务处理
 	 * 
 	 * @param nodeStr
 	 * @return
@@ -56,11 +56,17 @@ public class ApplyParseUtil {
 		}
 
 		Integer interfaceId = Integer.parseInt(nodeStr.substring(0, l));
-		String events = nodeStr.substring(l);
-		String[] str = nodeStr.split(".");
+		String eventAndLogid = nodeStr.substring(l);
+		//String[] str = nodeStr.split(".");
+		
+		String[] eventLogidPair = eventAndLogid.split("_"); 
+		String events = eventLogidPair[0] ;
+		String logid = eventLogidPair[1]  ;
+		
 		nodeInfo = new NodeInfo();
 		nodeInfo.setInterfaceId(interfaceId);
 		nodeInfo.setEvents(events);
+		nodeInfo.setLogId(logid);
 
 		return nodeInfo;
 	}
@@ -77,9 +83,9 @@ public class ApplyParseUtil {
 		}
 	}
 
-	private static String parsePath(String path) {
+	private static ParseResult parsePath(String deviceId ,String path) {
 
-		
+		String logId = null ;
 		String[] nodes = path.split("-");
 
 		// 接口11即兼职详情接口调用标志
@@ -93,6 +99,11 @@ public class ApplyParseUtil {
 			NodeInfo nodeInfo =  parseNode(nodeStr);
 			int interfaceId = nodeInfo.getInterfaceId();
 			String events = nodeInfo.getEvents();
+			logId = nodeInfo.getLogId() ;
+			
+			if(!StringUtils.isBlank( events )){
+				
+			}
 
 			if (interfaceId == 11) {
 				partJobViewFlag = true;
@@ -104,59 +115,59 @@ public class ApplyParseUtil {
 			switch (interfaceId) {
 			case 20:
 				// 返回报名来源为意向报名
-				return INTENT_APPLY;
+				return getParseResult( logId , deviceId ,INTENT_APPLY );
 			case 120:
 				// 设置为轮播图报名
-				return SLIDER_APPLY;
+				return getParseResult( logId , deviceId ,SLIDER_APPLY );
 			case 56:
 				// 设置启动页报名
-				return STARTUP_APPLY;
+				return getParseResult( logId , deviceId ,STARTUP_APPLY );
 			case 42:
 				// 设置为推送报名
-				return PUSH_APPLY;
+				return getParseResult( logId , deviceId ,PUSH_APPLY );
 			case 125:
 				// 首页推荐报名
-				return HOME_PAGE_APPLY ;
+				return getParseResult( logId , deviceId ,HOME_PAGE_APPLY ) ;
 			case 9:
 				if (i - 1 < 0) {
-					return FIND_APPLY;
+					return getParseResult( logId , deviceId ,FIND_APPLY );
 				}
 				NodeInfo next =  parseNode(nodes[i - 1]);
 				//先看事件
 				if (events != null){
 					if(events.indexOf(LABEL_EVENT_KEY) != -1){
-						return LABEL_APPLY ;
+						return getParseResult( logId , deviceId ,LABEL_APPLY ) ;
 					}else if(events.indexOf(SEARCH_EVENT_KEY) != -1){
-						return SEARCH_APPLY;
+						return getParseResult( logId , deviceId ,SEARCH_APPLY );
 					}
 					
 				}
 				if (next.getInterfaceId() == 93) {
-					return SEARCH_APPLY;
+					return getParseResult( logId , deviceId ,SEARCH_APPLY );
 				}
-				return FIND_APPLY;
+				return getParseResult( logId , deviceId ,FIND_APPLY );
 			case 93:
-				return SEARCH_APPLY;
+				return getParseResult( logId , deviceId ,SEARCH_APPLY ) ;
 			}
 
 		}
-		return OTHER_APPLY; 
+		return getParseResult( logId , deviceId ,OTHER_APPLY); 
 
 	}
 	
-	private static void add(String event, Map<String,Long> map){
+	/*private static void add(String event, Map<String,Long> map){
 		Long i = map.get(event)  ;
 		if(i == null){
 			map.put(event, 1l) ;
 		}else{
 			map.put(event, ++i) ;
 		}
-	}
+	}*/
 	
 	
-	private static ParseResult getParseResult( String deviceId , String event ){
-		String logId =  "" ;
-		ParseResult result = new ParseResult(logId,event,deviceId) ;
+	private static ParseResult getParseResult(String logId , String deviceId ,String eventType ){
+		
+		ParseResult result = new ParseResult(logId,deviceId,eventType) ;
 		return result ;
 	}
 	
@@ -176,7 +187,7 @@ public class ApplyParseUtil {
 	}
 	
 	
-	public static Map<String,Long> parsePathToMap(String deviceId,String path){
+	/*public static Map<String,Long> parsePathToMap(String deviceId,String path){
 		Map<String,Long> map  = new HashMap<String,Long>() ;
 		 
 		 
@@ -205,15 +216,15 @@ public class ApplyParseUtil {
 				}
 				//截取掉多余的内容
 				path =  getRemainingPath(location ,path) ;
-				/*location = path.indexOf("-",location) ;
+				location = path.indexOf("-",location) ;
 				//针对A0出现在最后的情况
 				if( location == -1){
 					break ;
 				}
-				path = path.substring(location + 1) ; */
+				path = path.substring(location + 1) ; 
 		 }
 		 return map ;
-	}
+	}*/
 	
 	
 	
@@ -232,19 +243,19 @@ public class ApplyParseUtil {
 			 	// 提取报名成功事件
 				int location = path.indexOf(ApplyParseUtil.APPLY_EVENT_KEY);
 				
-				if (!ApplyParseUtil.validateEventLocation(location)) {
+				/*if (!ApplyParseUtil.validateEventLocation(location)) {
 					//add( ApplyParseUtil.OTHER_APPLY,map); // 添加报名来源为“其他”
 					list.add(getParseResult( deviceId ,ApplyParseUtil.OTHER_APPLY)) ;
 					
 					path = getRemainingPath(location,path) ;
 					
 					continue ;
-				}
+				}*/
 				
-				String event = ApplyParseUtil.parsePath(path.substring(0, location - 1)) ; 
-				if(event != null){
+				ParseResult result = ApplyParseUtil.parsePath(deviceId ,path.substring(0, location - 1)) ; 
+				if(result.getEventType() != null){
 					//add(event,map) ;
-					list.add(getParseResult(logId , deviceId ,event)) ;
+					list.add( result) ;
 				}
 				//截取掉多余的内容
 				path =  getRemainingPath(location ,path) ;

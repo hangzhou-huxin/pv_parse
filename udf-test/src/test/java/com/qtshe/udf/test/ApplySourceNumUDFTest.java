@@ -1,5 +1,6 @@
 package com.qtshe.udf.test;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -7,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.qtshe.udf.apply.ApplyParseUtil;
+import com.qtshe.udf.apply.ParseResult;
 
 public class ApplySourceNumUDFTest {
 	
@@ -20,11 +22,14 @@ public class ApplySourceNumUDFTest {
 	
 	@Test
 	public void test(){
-		String path = "201-201-11-201-11-23-25.A0" ;
+		String path = "201-201-11-201-11-23-25.A0_ddddd" ;
 																						
 		
-		Map<String,Long> map = ApplyParseUtil.parsePathToMap("ddd", path) ;
-		System.out.println(map);
+		List<ParseResult> list = ApplyParseUtil.parsePathToList("ddd", path) ;
+
+		for(ParseResult result : list){
+			System.out.println(list);
+		}
 		
 		//Assert.assertEquals("search", type);
 		
