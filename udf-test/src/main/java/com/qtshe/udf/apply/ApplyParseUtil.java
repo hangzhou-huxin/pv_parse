@@ -83,7 +83,7 @@ public class ApplyParseUtil {
 		}
 	}
 
-	private static ParseResult parsePath(String deviceId ,String path) {
+	private static ParseResult parsePath(String deviceId ,String path ) {
 
 		String logId = null ;
 		String[] nodes = path.split("-");
@@ -187,6 +187,8 @@ public class ApplyParseUtil {
 	}
 	
 	
+	
+	
 	/*public static Map<String,Long> parsePathToMap(String deviceId,String path){
 		Map<String,Long> map  = new HashMap<String,Long>() ;
 		 
@@ -252,13 +254,16 @@ public class ApplyParseUtil {
 					continue ;
 				}*/
 				
-				ParseResult result = ApplyParseUtil.parsePath(deviceId ,path.substring(0, location - 1)) ; 
+				//事件所在的节点虽然没去掉，但去掉了事件，不影响分析结果
+				
+				ParseResult result = ApplyParseUtil.parsePath(deviceId , path.substring(0, location - 1)) ; 
 				if(result.getEventType() != null){
 					//add(event,map) ;
 					list.add( result) ;
 				}
 				//截取掉多余的内容
 				path =  getRemainingPath(location ,path) ;
+				
 				/*location = path.indexOf("-",location) ;
 				//针对A0出现在最后的情况
 				if( location == -1){
@@ -267,6 +272,11 @@ public class ApplyParseUtil {
 				path = path.substring(location + 1) ; */
 		 }
 		 return list ;
+	}
+	
+	
+	private static NodeInfo getCurrentLocationNode(int location , String path){
+		
 	}
 	
 

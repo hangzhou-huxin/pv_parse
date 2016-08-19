@@ -76,7 +76,10 @@ public class PathReduce extends ReducerBase {
 			
 			pathBuffer.append("-") ;
 		}
-		
+		//如果出现这种情况表示interfaceId为空,pathBuffer中未追加任何内容
+		if(pathBuffer.length() == 0){
+			return ;   
+		}
 		result.set(0, deviceid);
 		result.set(1, beginTime);
 		result.set(2, endTime);
