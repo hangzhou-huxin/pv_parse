@@ -2,6 +2,12 @@ package com.qtshe.udf.apply;
 
 public class NodeInfo {
 	
+	@Override
+	public String toString() {
+		return "NodeInfo [interfaceId=" + interfaceId + ", events=" + events + ", logId=" + logId + "]";
+	}
+
+
 	private Integer interfaceId ;
 	
 	

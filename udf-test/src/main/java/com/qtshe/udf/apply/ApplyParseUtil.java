@@ -56,12 +56,19 @@ public class ApplyParseUtil {
 		}
 
 		Integer interfaceId = Integer.parseInt(nodeStr.substring(0, l));
-		String eventAndLogid = nodeStr.substring(l);
+		String eventAndLogid = nodeStr.substring(l+1);
 		//String[] str = nodeStr.split(".");
 		
-		String[] eventLogidPair = eventAndLogid.split("_"); 
-		String events = eventLogidPair[0] ;
-		String logid = eventLogidPair[1]  ;
+		String events = null ;
+		String logid = null ;
+		if( eventAndLogid.indexOf( "_" ) != -1){
+			String[] eventLogidPair = eventAndLogid.split("_"); 
+			events = eventLogidPair[0] ;
+			logid = eventLogidPair[1]  ;
+		}else{
+			events = eventAndLogid ;
+		}
+		
 		
 		nodeInfo = new NodeInfo();
 		nodeInfo.setInterfaceId(interfaceId);
@@ -83,17 +90,27 @@ public class ApplyParseUtil {
 		}
 	}
 
-	private static ParseResult parsePath(String deviceId ,String path ) {
+	private static String parsePath( String path ) {
+		
+		if( StringUtils.isBlank(path)){
+			return OTHER_APPLY  ;
+		}
 
 		String logId = null ;
-		String[] nodes = path.split("-");
+		String[] nodes = null ;
+		
+		if(path.indexOf("-") != -1){
+			nodes = path.split("-");
+		}else{
+			nodes = new String[]{ path };
+		}
 
 		// 接口11即兼职详情接口调用标志
 		Boolean partJobViewFlag = false;
 
 		int len = nodes.length;
-		// 由于报名事件所在的节点不需参与分析，所以从len-2开始分析
-		for (int i = len - 2; i > -1; i--) {
+		
+		for (int i = len - 1; i > -1; i--) {
 			String nodeStr = nodes[i];
 			// 提取接口编号和事件列表
 			NodeInfo nodeInfo =  parseNode(nodeStr);
@@ -101,10 +118,7 @@ public class ApplyParseUtil {
 			String events = nodeInfo.getEvents();
 			logId = nodeInfo.getLogId() ;
 			
-			if(!StringUtils.isBlank( events )){
-				
-			}
-
+			
 			if (interfaceId == 11) {
 				partJobViewFlag = true;
 				continue;
@@ -115,54 +129,47 @@ public class ApplyParseUtil {
 			switch (interfaceId) {
 			case 20:
 				// 返回报名来源为意向报名
-				return getParseResult( logId , deviceId ,INTENT_APPLY );
+				return  INTENT_APPLY ;
 			case 120:
 				// 设置为轮播图报名
-				return getParseResult( logId , deviceId ,SLIDER_APPLY );
+				return  SLIDER_APPLY  ;
 			case 56:
 				// 设置启动页报名
-				return getParseResult( logId , deviceId ,STARTUP_APPLY );
+				return  STARTUP_APPLY  ;
 			case 42:
 				// 设置为推送报名
-				return getParseResult( logId , deviceId ,PUSH_APPLY );
+				return  PUSH_APPLY  ;
 			case 125:
 				// 首页推荐报名
-				return getParseResult( logId , deviceId ,HOME_PAGE_APPLY ) ;
+				return  HOME_PAGE_APPLY   ;
 			case 9:
 				if (i - 1 < 0) {
-					return getParseResult( logId , deviceId ,FIND_APPLY );
+					return  FIND_APPLY ;
 				}
 				NodeInfo next =  parseNode(nodes[i - 1]);
 				//先看事件
 				if (events != null){
 					if(events.indexOf(LABEL_EVENT_KEY) != -1){
-						return getParseResult( logId , deviceId ,LABEL_APPLY ) ;
+						return  LABEL_APPLY  ;
 					}else if(events.indexOf(SEARCH_EVENT_KEY) != -1){
-						return getParseResult( logId , deviceId ,SEARCH_APPLY );
+						return  SEARCH_APPLY ;
 					}
 					
 				}
 				if (next.getInterfaceId() == 93) {
-					return getParseResult( logId , deviceId ,SEARCH_APPLY );
+					return  SEARCH_APPLY ;
 				}
-				return getParseResult( logId , deviceId ,FIND_APPLY );
+				return  FIND_APPLY ;
 			case 93:
-				return getParseResult( logId , deviceId ,SEARCH_APPLY ) ;
+				return  SEARCH_APPLY ;
 			}
 
 		}
-		return getParseResult( logId , deviceId ,OTHER_APPLY); 
+		return  OTHER_APPLY ; 
 
 	}
 	
-	/*private static void add(String event, Map<String,Long> map){
-		Long i = map.get(event)  ;
-		if(i == null){
-			map.put(event, 1l) ;
-		}else{
-			map.put(event, ++i) ;
-		}
-	}*/
+	
 	
 	
 	private static ParseResult getParseResult(String logId , String deviceId ,String eventType ){
@@ -189,47 +196,13 @@ public class ApplyParseUtil {
 	
 	
 	
-	/*public static Map<String,Long> parsePathToMap(String deviceId,String path){
-		Map<String,Long> map  = new HashMap<String,Long>() ;
-		 
-		 
-		 
-
-		 if (path == null || path.trim() == "") {
-				return  null;
-		 }
-		 
-		 while( path.indexOf(ApplyParseUtil.APPLY_EVENT_KEY) != -1){
-			 
-			 	// 提取报名成功事件
-				int location = path.indexOf(ApplyParseUtil.APPLY_EVENT_KEY);
-				
-				if (!ApplyParseUtil.validateEventLocation(location)) {
-					add( ApplyParseUtil.OTHER_APPLY,map); // 添加报名来源为“其他”
-					
-					path = getRemainingPath(location,path) ;
-					
-					continue ;
-				}
-				
-				String event = ApplyParseUtil.parsePath(path.substring(0, location - 1)) ; 
-				if(event != null){
-					add(event,map) ;
-				}
-				//截取掉多余的内容
-				path =  getRemainingPath(location ,path) ;
-				location = path.indexOf("-",location) ;
-				//针对A0出现在最后的情况
-				if( location == -1){
-					break ;
-				}
-				path = path.substring(location + 1) ; 
-		 }
-		 return map ;
-	}*/
 	
-	
-	
+	/**
+	 * 入口方法
+	 * @param deviceId
+	 * @param path
+	 * @return
+	 */
 	public static List<ParseResult> parsePathToList( String deviceId,String path){
 		//Map<String,Long> map  = new HashMap<String,Long>() ;
 		 
@@ -245,38 +218,80 @@ public class ApplyParseUtil {
 			 	// 提取报名成功事件
 				int location = path.indexOf(ApplyParseUtil.APPLY_EVENT_KEY);
 				
-				/*if (!ApplyParseUtil.validateEventLocation(location)) {
-					//add( ApplyParseUtil.OTHER_APPLY,map); // 添加报名来源为“其他”
-					list.add(getParseResult( deviceId ,ApplyParseUtil.OTHER_APPLY)) ;
-					
-					path = getRemainingPath(location,path) ;
-					
-					continue ;
-				}*/
+				TargetPath targetPath = splitPath(location , path) ;
 				
-				//事件所在的节点虽然没去掉，但去掉了事件，不影响分析结果
-				
-				ParseResult result = ApplyParseUtil.parsePath(deviceId , path.substring(0, location - 1)) ; 
-				if(result.getEventType() != null){
-					//add(event,map) ;
-					list.add( result) ;
+				String eventType = ApplyParseUtil.parsePath( targetPath.getPreParsePath() ) ; 
+				if( StringUtils.isNotBlank(eventType) ){
+					ParseResult result = getParseResult(targetPath.getNodeInfo().getLogId(),deviceId,eventType) ;
+					list.add( result ) ;
 				}
+				
 				//截取掉多余的内容
-				path =  getRemainingPath(location ,path) ;
+				path =  targetPath.getRemainingPath() ;
 				
-				/*location = path.indexOf("-",location) ;
-				//针对A0出现在最后的情况
-				if( location == -1){
-					break ;
-				}
-				path = path.substring(location + 1) ; */
+				
 		 }
 		 return list ;
 	}
 	
-	
-	private static NodeInfo getCurrentLocationNode(int location , String path){
+	/**
+	 * 从path中提取出当前发生事件的节点、待分析的path、剩余的路径
+	 * @param location  事件出现的位置
+	 * @param path		分解前的path
+	 * @return
+	 */
+	public static TargetPath splitPath(int location , String path){
 		
+		TargetPath targetPath = null ;
+		
+		int beginIndex = 0;
+		int endIndex = 0;
+		 
+		for(int i=location;i>0;i--){
+			char c = path.charAt(i) ;
+			if(c == '-' ){
+				//获得事件节点的开始位置和前一节点的结束位置
+				beginIndex = i; 
+				break ;
+			}
+		}
+		
+		int len = path.length() ;
+		for(int j=location;j<len;j++){
+			char cc = path.charAt(j) ;
+			if( cc == '-'){
+				//获得事件节点的结束位置和后续节点的开始位置
+				endIndex = j ;
+				break ;
+			}
+		}
+		
+		//如果已经是最后一个节点
+		if( endIndex == 0){
+			endIndex = path.length() ;
+		}else{
+			endIndex = endIndex+1 ;
+		}
+				
+		
+		String preParsePath = path.substring(0,beginIndex) ; 
+		String remainingPath = path.substring( endIndex) ; 
+		
+		
+		NodeInfo node = null ;
+		if( beginIndex > 0){
+			beginIndex = beginIndex + 1 ;
+		}
+		node = parseNode(path.substring(beginIndex, endIndex-1)) ;
+		
+		 
+		
+		targetPath  = new TargetPath() ;
+		targetPath.setNodeInfo(node);
+		targetPath.setPreParsePath(preParsePath);
+		targetPath.setRemainingPath(remainingPath);
+		
+		return targetPath; 
 	}
 	
 
